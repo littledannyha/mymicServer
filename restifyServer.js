@@ -64,6 +64,7 @@ function respond(req, res, next){
 
 	
 	if(purpose.toLowerCase() == "practice"){
+		// checks for the exstince of the files and errors if corrupted
 		for(var i = 0; i < 5; i++){
 			potentialFolder = './moves/' + moveName;
 			potentialFileName = './moves/' + moveName + '/test' + String(i);
@@ -75,7 +76,7 @@ function respond(req, res, next){
 			}	
 		}
 
-	
+		// INSERT CALCULATIONS HERE	
 	}
 	else{ // create new folder and everything
 
