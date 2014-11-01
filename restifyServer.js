@@ -46,6 +46,59 @@ function trim(alof,threshold){
 	return alof.slice(startOfOutput, endOfOutput);
 }
 
+function scaleFeatures(alof, len2) {
+	var newFeatures = [];
+	for(var i = 0; Math.floor(i) < alof.length; i += ratio) {
+		newFeatures.append(alof[Math.floor(i)]);
+	}
+	if (newFeature.length == len2) {
+		return newFeatures;
+	} else {
+		return [-999] + newFeatures;
+	}
+}
+
+function normalizeFeatures(alof1, alof2) {
+	var trimAlof1 = trim(alof1);
+	var trimAlof2 = trim(alof2);
+	if (trimAlof1.length > trimAlof2.length) {
+		trimAlof1 = scaleFeatures(trimAlof1, trimAlof2.length)
+	} else {
+		trimAlof2 = scaleFeatures(trimAlof2, trimAlof1.length)
+	}
+	return [trimAlof1, trimAlof2];
+}
+
+function getVariance(alof1, alof2) {
+	//alof = a list of list of floats
+	//both are same length
+	var totalList = [0,0,0,0,0,0];
+	var averageList = [0,0,0,0,0,0];
+	var stdDevList = [0,0,0,0,0,0];
+	
+	for (var i = 0; i < alof1.length; i++) {
+		for (var featureCount = 0; featureCount < 6; featureCount++) {
+			totalList[featureCount] += Math.abs(alof1[i] - alof2[i]);
+		}
+	}
+
+	for (var featureCount = 0; featureCount < 6; featureCount++) {
+        	averageList[featureCount] = totalList[featureCount] / alof1.length;
+        }
+
+	//Uses totalList twice: once for average, once for stdDev
+	for (var i = 0; i < alof1.length; i++) {
+                for (var featureCount = 0; featureCount < 6; featureCount++) {
+                        totalList[featureCount] += Math.abs(averageList[featureCount] - Math.abs(alof1[i] - alof2[i]));
+                }
+        }
+
+	for (var featureCount = 0; featureCount < 6; featureCount++) {
+                stdDevList[featureCount] = totalList[featureCount] / alof1.length;
+        }
+	return [averageList, stdDevList];
+}
+
 function respond(req, res, next){
 	a = JSON.parse(req.body);
 	purpose = a["purpose"];
