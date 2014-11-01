@@ -5,6 +5,10 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.bodyParser());
 server.use(restify.queryParser());
 
+
+
+NUMBER_OF_TRAINING_DATA = 5; 
+
 function trim(alof,threshold){
 	var out = [];
 	var startOfOutput = 0;
@@ -57,6 +61,37 @@ function respond(req, res, next){
 	listOfFeatureStringList= listOfFeatureStrings.map(function(x){return x.split(',');}); // ["1","2","3"...]
 	listOfFeatureVectors = listOfFeatureStringList.map(function(x){return parseFloat(x);});
 	console.log(listOfFeatureVectors);
+
+	
+	if(purpose.toLowerCase() == "practice"){
+		for(var i = 0; i < 5; i++){
+			potentialFolder = './moves/' + moveName;
+			potentialFileName = './moves/' + moveName + '/test' + String(i);
+			if(fs.existsSync(potentialFolder){
+				if(!fs.existsSync(potentialFileName)){
+					res.send("training data is corrupted");
+					break;
+				}
+			}	
+		}
+
+	
+	}
+	else{ // create new folder and everything
+
+		for(var i = 0; i < 5; i++){
+			potentialFolder = './moves/' + moveName;
+			potentialFileName = './moves/' + moveName + '/test' + String(i);
+			if(fs.existsSync(potentialFolder){
+				if(!fs.existsSync(potentialFileName)){
+					fs.writeFileSync(potentialFileName,String(listOfFeatureVectors));
+					break;
+				}
+			}	
+		}
+
+	}
+
 
 	res.send(req.body);
 	next();
