@@ -10,12 +10,16 @@ function trim(alof,threshold){
 	var startOfOutput = 0;
 	var endOfOutput = alof.length;
 	var chainAboveThreshold = 0;
+	var chainAboveThresholdMax = 10;
 	//gets the first index of the output
 	for(var i = 0; i < alof.length; i++){
-		if(alof[i] >= threshold){
+		var featureVector = alof[i];
+		var accMagnitude = Math.sqrt( pow(featureVector[0], 2) + pow(featureVector[1], 2) + pow(featureVector[2], 2) );
+		var gyroMagnitude = Math.sqrt( pow(featureVector[3], 2) + pow(featureVector[4], 2) + pow(featureVector[5], 2) );
+		if(accMagnitude >= threshold || gyroMagnitude >= threshold){
 			chainAboveThreshold += 1;
-			if (chainAboveThreshold >= 2){
-				startOfOutput = i;
+			if (chainAboveThreshold >= chainAboveThresholdMax){
+				startOfOutput = i - chainAboveThresholdMax;
 				break;
 			}
 		}
@@ -24,12 +28,22 @@ function trim(alof,threshold){
 		}
 	}
 	
-	for(var i = alof.length;i >= 0; i--){
-		if(alof[i] >= threshold){
-
-
-		}
+	for(var i = alof.length; i >= 0; i--){
+		var featureVector = alof[i];
+		var accMagnitude = Math.sqrt( pow(featureVector[0], 2) + pow(featureVector[1], 2) + pow(featureVector[2], 2) );
+                var gyroMagnitude = Math.sqrt( pow(featureVector[3], 2) + pow(featureVector[4], 2) + pow(featureVector[5], 2) );
+                if(accMagnitude >= threshold || gyroMagnitude >= threshold){
+                        chainAboveThreshold += 1;
+                        if (chainAboveThreshold >= chainAboveThresholdMax){
+                                endOfOutput = i + chainAboveThresholdMax;
+                                break;
+                        }
+                }
+                else{
+                        chainAboveThreshold = 0;
+                }
 	}
+	return alof.slice(startOfOutput, endOfOutput);
 }
 
 function respond(req, res, next){
