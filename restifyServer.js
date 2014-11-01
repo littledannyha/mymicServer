@@ -36,6 +36,9 @@ function respond(req, res, next){
 	a = JSON.parse(req.body);
 	purpose = a["purpose"];
 	moveName = a["moveName"];
+
+
+
 	listOfFeatureStrings = a["data"].split(';'); // ["1,2,3,4",....]
 	listOfFeatureStringList= listOfFeatureStrings.map(function(x){return x.split(',');}); // ["1","2","3"...]
 	listOfFeatureVectors = listOfFeatureStringList.map(function(x){return parseFloat(x);});
