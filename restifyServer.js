@@ -192,7 +192,8 @@ function respond(req, res, next){
 		}
 		out['probability'] = percentages.reduce(function(x,y){return x>y?x:y;});
 		out['moveName'] = moveName;
-		
+		out['data'] = getMagnitudes(listOfFeatureVectors);
+		res.send(JSON.stringify(out));
 	}
 	else{ // create new folder and everything
 		objectToWrite = {moveName: moveName, data: listOfFeatureVectors};		
