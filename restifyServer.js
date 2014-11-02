@@ -49,7 +49,7 @@ function trim(alof){
                         var chainAboveThreshold = 0;
                 }
 	}
-	console.log(startOfOutput,endOfOutput);
+	//console.log(startOfOutput,endOfOutput);
 	return alof.slice(startOfOutput, endOfOutput);
 }
 
@@ -86,7 +86,7 @@ function getVariance(alof1, alof2) {
 			totalList[featureCount] += Math.abs(alof1[i][featureCount] - alof2[i][featureCount]);
 		}
 	}
-	console.log(totalList);
+	//console.log(totalList);
 	for (var featureCount = 0; featureCount < 6; featureCount++) {
         	averageList[featureCount] = totalList[featureCount] / alof1.length;
         }
@@ -97,7 +97,7 @@ function getVariance(alof1, alof2) {
                         totalList[featureCount] += Math.abs(averageList[featureCount] - Math.abs(alof1[i][featureCount] - alof2[i][featureCount]));
                 }
         }
-	console.log(totalList);
+	//console.log(totalList);
 
 	for (var featureCount = 0; featureCount < 6; featureCount++) {
                 stdDevList[featureCount] = totalList[featureCount] / alof1.length;
@@ -116,7 +116,8 @@ function respond(req, res, next){
 	var listOfFeatureStrings = a["data"].split(';'); // ["1,2,3,4",....]
 	var listOfFeatureStringList= listOfFeatureStrings.map(function(x){return x.split(',');}); // ["1","2","3"...]
 	var listOfFeatureVectors = listOfFeatureStringList.map(function(x){return parseFloat(x);});
-//	console.log(listOfFeatureVectors);
+//	//console.log(listOfFeatureVectors);
+	//console.log(listOfFeatureVectors)
 
 	
 	if(purpose.toLowerCase() == "practice"){
@@ -131,7 +132,7 @@ function respond(req, res, next){
 				}
 			}	
 		}
-
+		
 		// INSERT CALCULATIONS HERE	
 	}
 	else{ // create new folder and everything
@@ -154,11 +155,11 @@ function respond(req, res, next){
 	next();
 }
 
-//server.post('/',respond);
-//
-//server.listen(8080, function(){
-//	console.log('%s listening at %s',server.name, server.url);
-//});
+server.post('/',respond);
+
+server.listen(8080, function(){
+	//console.log('%s listening at %s',server.name, server.url);
+});
 
 
 function genSequentialArray(len){
@@ -179,7 +180,7 @@ function testScaleFeatures(){
 			var maxArr = alolof[i].length > alolof[j].length ? alolof[i]:alolof[j];
 			var minArr = alolof[i].length < alolof[j].length ? alolof[i]:alolof[j];
 
-			assert.assert.equal(minArr.length, scaleFeatures(maxArr,minArr.length).length,'failure on scaleTest' );
+			assert.equal(minArr.length, scaleFeatures(maxArr,minArr.length).length,'failure on scaleTest' );
 		}
 	}
 }
@@ -204,23 +205,23 @@ function testTrim(){
 	[0,0,0,.5,2.5,.5,0,0,0],
 	[0,0,0,.5,3.5,.5,0,0,0],
 	[0,0,0,.5,4.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0]];
-//	console.log(alolof);
+//	//console.log(alolof);
 	var a = trim(alolof);
-	console.log(a);
-	console.log(scaleFeatures(a, 2));
+	//console.log(a);
+	//console.log(scaleFeatures(a, 2));
 	var b = [[0,0,0,.5,.5,.5,0,0,0],
         [0,0,0,.5,3.5,.5,0,0,0],
         [0,0,0,.5,4.5,.5,0,0,0],
         [0,0,0,.5,.5,.5,0,0,0]];
 	b = trim(b)
-	console.log(b);
-	console.log(b, 2);
+	//console.log(b);
+	//console.log(scaleFeatures(b,2));
 	var normalizedAB = normalizeFeatures(a,b);
-	console.log(normalizedAB);
-	console.log(getVariance(normalizedAB[0], normalizedAB[1])); 
+	//console.log(normalizedAB);
+	//console.log(getVariance(normalizedAB[0], normalizedAB[1])); 
 	//assert.equal(true,a[0] > TRIMMING_ACC_THRESHOLD && a[1] > TRIMMING_ACC_THRESHOLD,'testTrimFailed first Case: vector is ' + a);
 //			assert.equal(a[a.length-1] > TRIMMING_ACC_THRESHOLD, 'testTrimFailed Second Case');
 	//assert.equal(a[a.length-2] > TRIMMING_ACC_THRESHOLD, 'testTrimFailed third Case' );
 }
-testTrim();
-testScaleFeatures();
+//testTrim();
+//testScaleFeatures();
