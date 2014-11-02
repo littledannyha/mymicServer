@@ -106,17 +106,18 @@ function getVariance(alof1, alof2) {
 	return [averageList, stdDevList];
 }
 
+
 function respond(req, res, next){
 	a = JSON.parse(req.body);
 	purpose = a["purpose"];
 	moveName = a["moveName"];
 
-
+	
 
 	var listOfFeatureStrings = a["data"].split(';'); // ["1,2,3,4",....]
 	var listOfFeatureStringList= listOfFeatureStrings.map(function(x){return x.split(',');}); // ["1","2","3"...]
 	var listOfFeatureVectors = listOfFeatureStringList.map(function(x){return parseFloat(x);});
-//	//console.log(listOfFeatureVectors);
+	console.log(listOfFeatureVectors);
 	//console.log(listOfFeatureVectors)
 
 	
@@ -158,7 +159,7 @@ function respond(req, res, next){
 server.post('/',respond);
 
 server.listen(8080, function(){
-	//console.log('%s listening at %s',server.name, server.url);
+console.log('%s listening at %s',server.name, server.url);
 });
 
 
