@@ -10,6 +10,17 @@ NUMBER_OF_TRAINING_DATA = 5;
 TRIMMING_ACC_THRESHOLD = 1;
 TRIMMING_GYRO_THRESHOLD = 1;
 
+function getMagnitudes(alof) {
+	var magnitudes = [];
+	for (var i = 0; i < alof.length; i++) {
+		magnitudes[magnitudes.length] = Math.sqrt(Math.pow(alof[i][0], 2) + Math.pow(alof[i][1], 2) + Math.pow(alof[i][2], 2) + 
+							  Math.pow(alof[i][3], 2) + Math.pow(alof[i][4], 2) + Math.pow(alof[i][5], 2));
+	}
+	return magnitudes;
+}
+
+//var test = [[1,2,3,4,5,6],[1,1,1,1,1,1],[0,0,0,1,1,1]];
+//console.log(getMagnitudes(test));
 
 function trim(alof){
 	var out = [];
