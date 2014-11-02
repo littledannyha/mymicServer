@@ -106,6 +106,54 @@ function getVariance(alof1, alof2) {
 	return [averageList, stdDevList];
 }
 
+function averageValues(alof1, alof2, variances) {
+	var averageList = [0,0,0,0,0,0];
+	var aveVariances = [[0,0,0,0,0,0],[0,0,0,0,0,0]]
+	var aveList1 = [0,0,0,0,0,0];
+	var aveList2 = [0,0,0,0,0,0];
+	for(var i = 0; i < alof1.length; i++) {
+		for (var featureCount = 0; featureCount < 6; featureCount++) {
+			aveList1[featureCount] += alof1[i][featureCount];	
+			aveList2[featureCount] += alof2[i][featureCount]; 
+		}
+	}
+	for (var featureCount = 0; featureCount < 6; featureCount++) {
+        	averageList[featureCount] = Math.max(aveList1[featureCount], aveList2[featureCount]) / alof1.length;
+        	if (averageList[featureCount] != 0) {
+			aveVariances[0][featureCount] = variances[0][featureCount] / averageList[featureCount];
+			aveVariances[1][featureCount] = variances[1][featureCount] / averageList[featureCount];		
+		} else {
+			aveVariances[0][featureCount] = variances[0][featureCount];
+			aveVariances[1][featureCount] = variances[1][featureCount];
+		}
+	}
+	var meanVal = aveVariances[0].reduce(function(x,y){return x + y;}) / aveVariances[0].length;
+	var varianceVal = aveVariances[1].reduce(function(x,y){return x + y;}) / aveVariances[1].length;
+	var percentage = (1 - meanVal) * (1 - varianceVal);
+	//console.log(meanVal, varianceVal, percentage);
+	return percentage;
+}
+
+function getPercentage(alof1, alof2) {
+	var normalizedAB = normalizeFeatures(alof1, alof2);
+        //console.log(normalizedAB);
+        var newa = normalizedAB[0];
+        var newb = normalizedAB[1];
+        var variances = getVariance(newa, newb);
+        //console.log(variances);
+        var percentage = averageValues(newa, newb, variances);
+        //console.log("ave:", percentage);
+	return percentage
+}
+
+// filepath -> object
+function readObject(filepath){
+	return JSON.parse(fs.readFileSync(filepath));
+}
+
+function writeObject(filepath,object){
+	fs.writeFileSync(filepath,JSON.stringify(object));
+}
 
 function respond(req, res, next){
 	a = JSON.parse(req.body);
@@ -123,6 +171,8 @@ function respond(req, res, next){
 	
 	if(purpose.toLowerCase() == "practice"){
 		// checks for the exstince of the files and errors if corrupted
+		percentages = [];
+		out = {};
 		for(var i = 0; i < 5; i++){
 			var potentialFolder = './moves/' + moveName;
 			var potentialFileName = './moves/' + moveName + '/test' + String(i);
@@ -130,20 +180,29 @@ function respond(req, res, next){
 				if(!fs.existsSync(potentialFileName)){
 					res.send("training data is corrupted");
 					break;
+
+				}
+				else{
+					ithObject = readObject(potentialFileName);
+					percentages[i] = getPercentage(ithObject['data'],listOfFeatureVectors);
+					
+
 				}
 			}	
 		}
+		out['probability'] = percentages.reduce(function(x,y){return x>y?x:y;});
+		out['moveName'] = moveName;
 		
-		// INSERT CALCULATIONS HERE	
 	}
 	else{ // create new folder and everything
-
+		objectToWrite = {moveName: moveName, data: listOfFeatureVectors};		
 		for(var i = 0; i < 5; i++){
 			var potentialFolder = './moves/' + moveName;
 			var potentialFileName = './moves/' + moveName + '/test' + String(i);
 			if(fs.existsSync(potentialFolder)){
 				if(!fs.existsSync(potentialFileName)){
-					fs.writeFileSync(potentialFileName,String(listOfFeatureVectors));
+//					fs.writeFileSync(potentialFileName,JSON.stringify(listOfFeatureVectors));
+					writeObject(potentialFileName,objectToWrite)
 					break;
 				}
 			}	
@@ -156,7 +215,7 @@ function respond(req, res, next){
 	next();
 }
 
-server.post('/',respond);
+//server.post('/',respond);
 
 server.listen(8080, function(){
 console.log('%s listening at %s',server.name, server.url);
@@ -200,29 +259,36 @@ function genTestListForTrim(){
 }
 
 function testTrim(){
-//	alolof = genTestListForTrim();
-	var alolof = [[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],
-	[0,0,0,.5,1.5,.5,0,0,0],
-	[0,0,0,.5,2.5,.5,0,0,0],
-	[0,0,0,.5,3.5,.5,0,0,0],
-	[0,0,0,.5,4.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0]];
-//	//console.log(alolof);
-	var a = trim(alolof);
+	//alolof = genTestListForTrim();
+	//console.log(alolof);
+	//var a = trim(alolof);
 	//console.log(a);
 	//console.log(scaleFeatures(a, 2));
+	var a = [[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],
+        [0,0,0,.5,1.5,.5,0,0,0],
+        [0,0,0,.5,2.5,.5,0,0,0],
+        [0,0,0,.5,3.5,.5,0,0,0],
+        [0,0,0,.5,4.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0]];
 	var b = [[0,0,0,.5,.5,.5,0,0,0],
         [0,0,0,.5,3.5,.5,0,0,0],
         [0,0,0,.5,4.5,.5,0,0,0],
         [0,0,0,.5,.5,.5,0,0,0]];
-	b = trim(b)
+	var percentage = getPercentage(a,b);
+	console.log("percent:", percentage);
+	//b = trim(b)
 	//console.log(b);
 	//console.log(scaleFeatures(b,2));
-	var normalizedAB = normalizeFeatures(a,b);
+	//var normalizedAB = normalizeFeatures(a,b);
 	//console.log(normalizedAB);
-	//console.log(getVariance(normalizedAB[0], normalizedAB[1])); 
+	//var newa = normalizedAB[0];
+	//var newb = normalizedAB[1];
+	//var variances = getVariance(newa, newb);
+	//console.log(variances);
+	//var featureMean = averageValues(newa, newb, variances);
+	//console.log("ave:", featureMean); 
 	//assert.equal(true,a[0] > TRIMMING_ACC_THRESHOLD && a[1] > TRIMMING_ACC_THRESHOLD,'testTrimFailed first Case: vector is ' + a);
 //			assert.equal(a[a.length-1] > TRIMMING_ACC_THRESHOLD, 'testTrimFailed Second Case');
 	//assert.equal(a[a.length-2] > TRIMMING_ACC_THRESHOLD, 'testTrimFailed third Case' );
 }
-//testTrim();
-//testScaleFeatures();
+testTrim();
+testScaleFeatures();
