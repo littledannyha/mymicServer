@@ -138,6 +138,7 @@ function averageValues(alof1, alof2, variances) {
 			aveVariances[1][featureCount] = variances[1][featureCount];
 		}
 	}
+//	console.log("hit reduces in averageValues");
 	var meanVal = aveVariances[0].reduce(function(x,y){return x + y;}) / aveVariances[0].length;
 	var varianceVal = aveVariances[1].reduce(function(x,y){return x + y;}) / aveVariances[1].length;
 	var percentage = (1 - meanVal) * (1 - varianceVal);
@@ -168,7 +169,9 @@ function writeObject(filepath,object){
 
 function respond(req, res, next){
 	a = JSON.parse(req.body);
+	console.log('the json file received was ', a);
 	purpose = a["purpose"];
+console.log("purpose is %s",purpose);	
 	moveName = a["moveName"];
 
 	
@@ -179,9 +182,9 @@ function respond(req, res, next){
 	console.log(listOfFeatureVectors);
 	//console.log(listOfFeatureVectors)
 
-	
-	if(purpose.toLowerCase() == "practice"){
 		// checks for the exstince of the files and errors if corrupted
+	if(purpose == "practice"){
+
 		percentages = [];
 		out = {};
 		for(var i = 0; i < 5; i++){
@@ -189,8 +192,9 @@ function respond(req, res, next){
 			var potentialFileName = './moves/' + moveName + '/test' + String(i);
 			if(fs.existsSync(potentialFolder)){
 				if(!fs.existsSync(potentialFileName)){
+					console.log('training data is corrupted or nonexistent');
 					res.send("training data is corrupted");
-					break;
+					return;
 
 				}
 				else{
@@ -201,12 +205,17 @@ function respond(req, res, next){
 				}
 			}	
 		}
+		console.log('hit out[probability] = percentages.reduce( #sum');
+		console.log(percentages);
 		out['probability'] = percentages.reduce(function(x,y){return x>y?x:y;});
+		console.log('out[probability] is successful');
 		out['moveName'] = moveName;
 		out['data'] = getMagnitudes(listOfFeatureVectors);
-		res.send(JSON.stringify(out));
+//		res.send(JSON.stringify(out));
+		res.send(out);
 	}
 	else{ // create new folder and everything
+		console.log('newMove:',moveName);
 		objectToWrite = {moveName: moveName, data: listOfFeatureVectors};		
 		for(var i = 0; i < 5; i++){
 			var potentialFolder = './moves/' + moveName;
@@ -222,15 +231,17 @@ function respond(req, res, next){
 
 	}
 
-
+	console.log('req.body');
 	res.send(req.body);
 	next();
 }
 
-//server.post('/',respond);
+server.post('/',respond);
+server.get('/',respond);
 
 server.listen(8080, function(){
 console.log('%s listening at %s',server.name, server.url);
+
 });
 
 
