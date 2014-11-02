@@ -1,3 +1,4 @@
+var assert = require('assert');
 var restify = require('restify');
 var fs = require('fs');
 var server = restify.createServer();
@@ -5,61 +6,61 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.bodyParser());
 server.use(restify.queryParser());
 
-
-
 NUMBER_OF_TRAINING_DATA = 5; 
+TRIMMING_ACC_THRESHOLD = 1;
+TRIMMING_GYRO_THRESHOLD = .05;
 
-function trim(alof,threshold){
+
+function trim(alof){
 	var out = [];
 	var startOfOutput = 0;
 	var endOfOutput = alof.length;
-	var chainAboveThreshold = 0;
-	var chainAboveThresholdMax = 10;
+	var chainAboveThreshold = 0; // current run
+	var chainAboveThresholdMax = 2; // max run
 	//gets the first index of the output
 	for(var i = 0; i < alof.length; i++){
 		var featureVector = alof[i];
-		var accMagnitude = Math.sqrt( pow(featureVector[0], 2) + pow(featureVector[1], 2) + pow(featureVector[2], 2) );
-		var gyroMagnitude = Math.sqrt( pow(featureVector[3], 2) + pow(featureVector[4], 2) + pow(featureVector[5], 2) );
-		if(accMagnitude >= threshold || gyroMagnitude >= threshold){
+		var accMagnitude = Math.sqrt(Math.pow(featureVector[0], 2) +Math.pow(featureVector[1], 2) +Math.pow(featureVector[2], 2) );
+		var gyroMagnitude = Math.sqrt(Math.pow(featureVector[3], 2) +Math.pow(featureVector[4], 2) +Math.pow(featureVector[5], 2) );
+		if(accMagnitude >= TRIMMING_ACC_THRESHOLD || gyroMagnitude >= TRIMMING_GYRO_THRESHOLD){
 			chainAboveThreshold += 1;
 			if (chainAboveThreshold >= chainAboveThresholdMax){
-				startOfOutput = i - chainAboveThresholdMax;
+				var startOfOutput = i +1 - chainAboveThresholdMax;
 				break;
 			}
 		}
 		else{
-			chainAboveThreshold = 0;
+			var chainAboveThreshold = 0;
 		}
 	}
 	
-	for(var i = alof.length; i >= 0; i--){
+	for(var i = alof.length-1; i >= 0; i--){
 		var featureVector = alof[i];
-		var accMagnitude = Math.sqrt( pow(featureVector[0], 2) + pow(featureVector[1], 2) + pow(featureVector[2], 2) );
-                var gyroMagnitude = Math.sqrt( pow(featureVector[3], 2) + pow(featureVector[4], 2) + pow(featureVector[5], 2) );
-                if(accMagnitude >= threshold || gyroMagnitude >= threshold){
+		var accMagnitude = Math.sqrt(Math.pow(featureVector[0], 2) +Math.pow(featureVector[1], 2) +Math.pow(featureVector[2], 2) );
+		var gyroMagnitude = Math.sqrt(Math.pow(featureVector[3], 2) +Math.pow(featureVector[4], 2) +Math.pow(featureVector[5], 2) );
+			if(accMagnitude >= TRIMMING_ACC_THRESHOLD || gyroMagnitude >= TRIMMING_GYRO_THRESHOLD){
                         chainAboveThreshold += 1;
                         if (chainAboveThreshold >= chainAboveThresholdMax){
-                                endOfOutput = i + chainAboveThresholdMax;
+                                var endOfOutput = i - 1 + chainAboveThresholdMax;
                                 break;
                         }
                 }
                 else{
-                        chainAboveThreshold = 0;
+                        var chainAboveThreshold = 0;
                 }
 	}
+	console.log(startOfOutput,endOfOutput);
 	return alof.slice(startOfOutput, endOfOutput);
 }
 
 function scaleFeatures(alof, len2) {
+	// assert len2 is less than the list length and ratio is greater than 1
 	var newFeatures = [];
-	for(var i = 0; Math.floor(i) < alof.length; i += ratio) {
-		newFeatures.append(alof[Math.floor(i)]);
+	var ratio = alof.length/len2;
+	for(var i = 0; i< len2; i++ ) {
+		newFeatures.append(alof[Math.floor(i * ratio)]);
 	}
-	if (newFeature.length == len2) {
-		return newFeatures;
-	} else {
-		return [-999] + newFeatures;
-	}
+	return newFeatures;
 }
 
 function normalizeFeatures(alof1, alof2) {
@@ -110,18 +111,18 @@ function respond(req, res, next){
 
 
 
-	listOfFeatureStrings = a["data"].split(';'); // ["1,2,3,4",....]
-	listOfFeatureStringList= listOfFeatureStrings.map(function(x){return x.split(',');}); // ["1","2","3"...]
-	listOfFeatureVectors = listOfFeatureStringList.map(function(x){return parseFloat(x);});
-	console.log(listOfFeatureVectors);
+	var listOfFeatureStrings = a["data"].split(';'); // ["1,2,3,4",....]
+	var listOfFeatureStringList= listOfFeatureStrings.map(function(x){return x.split(',');}); // ["1","2","3"...]
+	var listOfFeatureVectors = listOfFeatureStringList.map(function(x){return parseFloat(x);});
+//	console.log(listOfFeatureVectors);
 
 	
 	if(purpose.toLowerCase() == "practice"){
 		// checks for the exstince of the files and errors if corrupted
 		for(var i = 0; i < 5; i++){
-			potentialFolder = './moves/' + moveName;
-			potentialFileName = './moves/' + moveName + '/test' + String(i);
-			if(fs.existsSync(potentialFolder){
+			var potentialFolder = './moves/' + moveName;
+			var potentialFileName = './moves/' + moveName + '/test' + String(i);
+			if(fs.existsSync(potentialFolder)){
 				if(!fs.existsSync(potentialFileName)){
 					res.send("training data is corrupted");
 					break;
@@ -134,9 +135,9 @@ function respond(req, res, next){
 	else{ // create new folder and everything
 
 		for(var i = 0; i < 5; i++){
-			potentialFolder = './moves/' + moveName;
-			potentialFileName = './moves/' + moveName + '/test' + String(i);
-			if(fs.existsSync(potentialFolder){
+			var potentialFolder = './moves/' + moveName;
+			var potentialFileName = './moves/' + moveName + '/test' + String(i);
+			if(fs.existsSync(potentialFolder)){
 				if(!fs.existsSync(potentialFileName)){
 					fs.writeFileSync(potentialFileName,String(listOfFeatureVectors));
 					break;
@@ -151,12 +152,58 @@ function respond(req, res, next){
 	next();
 }
 
-server.post('/',respond);
+//server.post('/',respond);
+//
+//server.listen(8080, function(){
+//	console.log('%s listening at %s',server.name, server.url);
+//});
 
 
-server.listen(8080, function(){
-	console.log('%s listening at %s',server.name, server.url);
-});
+function genSequentialArray(len){
+	var a = []
+	for(var i = 0; i < len; i++){
+		a[i] = i;
+	}
+	return a;
+}
 
+function testScaleFeatures(){
+	var alolof = [];
+	for(var i = 0; i < 100; i++){
+		alolof[i] = genSequentialArray(Math.random() * 1000);	
+	}
+	for(var i = 0; i < alolof.length; i++){
+		for(var j= 0; j < alolof.length; j++){
+			var maxArr = alolof[i].length > alolof[j].length ? alolof[i]:alolof[j];
+			var minArr = alolof[i].length < alolof[j].length ? alolof[i]:alolof[j];
 
+			assert.assert.equal(minArr.length, scaleFeatures(maxArr,minArr.length).length,'failure on scaleTest' );
+		}
+	}
+}
 
+function genTestListForTrim(){
+	var alolof = []
+	for(var rep = 0; rep < 100; rep++){
+		var a = []
+		for(var i = 0; i < 9; i++){
+			a[i] = Math.random() * TRIMMING_ACC_THRESHOLD;
+		}
+		
+		alolof[rep] = a;
+	}
+	return alolof;
+}
+
+function testTrim(){
+//	alolof = genTestListForTrim();
+	alolof = [[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,5.5,.5,0,0,0],[0,0,0,.5,5.5,.5,0,0,0],[0,0,0,.5,5.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],[0,0,0,.5,.5,.5,0,0,0],];
+//	console.log(alolof);
+	var a = trim(alolof);
+	console.log(a);
+	assert.equal(true,a[0] > TRIMMING_ACC_THRESHOLD && a[1] > TRIMMING_ACC_THRESHOLD,'testTrimFailed first Case: vector is ' + a);
+//			assert.equal(a[a.length-1] > TRIMMING_ACC_THRESHOLD, 'testTrimFailed Second Case');
+	assert.equal(a[a.length-2] > TRIMMING_ACC_THRESHOLD, 'testTrimFailed third Case' );
+}
+testTrim();
+testScaleFeatures();
